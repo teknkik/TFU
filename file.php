@@ -1,4 +1,6 @@
-<?php
+ <?php
+$settings_location = "info.php"; #should never be in web-directory
+include($settings_location);
 function  flnmclean($filename) {
 	$filename = str_replace("ä", "a", $filename);
 	$filename = str_replace("Ä", "A", $filename);
@@ -8,32 +10,34 @@ function  flnmclean($filename) {
 	$filename = str_replace("Å", "A", $filename);
 	return ($filename);
 }
-a:
+function errmsg($errorcode) { #for failures
+	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out");
+	echo '<a href="?">Reload</a><br>';
+	die($errorarray[$errorcode]."</body></html>");
+}
 session_start();
-$settings_location = "info.php"; #should never be in web-directory
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>File Upload 1 alpha</title>
+<title>TFU Upload</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 </head>
 <body>
 <?php
-include($settings_location);
+a:
 $pass = $_POST['pass'];
 $username = $_POST['username'];
 #let's check data from info.php
-if(!$info_addr) die("No script address set</body></html>");
-if(!$info_location) die("No file save location set</body></html>");
-if(!$info_script_location) die("No script address set</body></html>");
+if(!$info_addr) errmsg(0);
+if(!$info_location) errmsg(0);
+if(!$info_script_location) errmsg(0);
 #logged in-------------------------------#
 if($_SESSION['log'] == 1) {
 #logging out
 	if($_GET['exit']) {
 		session_destroy();
-		echo "Logged out";
-		goto a;
+		errmsg(6);
 	 }
 #changing password
 if($_POST['npassword']) {
@@ -58,11 +62,11 @@ fclose($fed);
 	if($_GET['rmfn']) {
 		$brmfn = $_GET['rmfn'];
 		$rmfn = str_replace("../", "", $brmfn);
-		if($rmfn !== $brmfn) die("No modifying files in other directories</body></html>");
+		if($rmfn !== $brmfn) errmsg(2);
 		if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && file_exists($info_location."/".$rmfn)) {
 		unlink($info_location."/".$rmfn);
 		}
-		else echo "You may not remove index.php / file does not exist";
+		else errmsg(1);
 	 }
 #changing name
 	if($_GET['orgflnm'] && $_GET['nflnm']) {
@@ -70,18 +74,18 @@ fclose($fed);
 	$bnflnm = $_GET['nflnm'];
 	$orgflnm = str_replace("../", "", $borgflnm);
 	$nflnm = str_replace("../", "", $bnflnm);
-	if($nflnm !== $bnflnm) die("No modifying files in other directories</body></html>");
-	if($orgflnm !== $borgflnm) die("No modifying files in other directories</body></html>");
+	if($nflnm !== $bnflnm) errmsg(1);
+	if($orgflnm !== $borgflnm) errmsg(1);
 	$nflnm = flnmclean($nflnm);
 	if($orgflnm !== "." && $orgflnm !== ".." && $orgflnm !== "index.php" && file_exists($info_location."/".$orgflnm) && $nflnm !== "." && $nflnm !== ".." && $nflnm !== "index.php" && !file_exists($info_location."/".$nflnm)) {
 		$extension = end(explode(".", $nflnm)); #let's check for file name thingy
 		if(!in_array($extension, $info_disallowedexts)) {
 			rename($info_location."/".$orgflnm, $info_location."/".$nflnm);
 			}
-		else die("Disallowed file type</body></html>");
-	echo "File name changed.";
+		else errmsg(5);
+	echo "Filename changed.";
 		}
-		else echo "File with this name is already there! / You tried to change files that are not allowed";
+		else errmsg(5);
 	}
 #uploading
 	if($_FILES) {
@@ -93,11 +97,11 @@ fclose($fed);
 				if(move_uploaded_file($_FILES['data']['tmp_name'], $info_location."/".$name)) {
 					echo "Upload successful";
 						}
-				else die("Upload failed</body></html>");
+				else errmsg(4);
 					}
-		else die("Disallowed file type</body></html>");
+		else errmsg(4);
 		}
-		else die("Error occured during upload</body></html>");
+		else errmsg(4);
 	}
 #file listing
 	 echo '<table>'."\n";
@@ -132,7 +136,7 @@ foreach($files_array as $fi) {
 	}
 }
 if($pass) {
-die("Wrong password</body></html>");
+errmsg(3);
 }
 #public fiel list if allowed
 if($info_filelist == true) {
