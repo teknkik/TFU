@@ -10,7 +10,7 @@ function  flnmclean($filename) {
 }
 a:
 session_start();
-$settings_location = "../data/info.php"; #should never be in web-directory
+$settings_location = "info.php"; #should never be in web-directory
 ?>
 <!DOCTYPE HTML>
 <html>
