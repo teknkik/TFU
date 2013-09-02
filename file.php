@@ -1,5 +1,4 @@
 <?php
-#default username&password is "default"
 function  flnmclean($filename) {
 	$filename = str_replace("ä", "a", $filename);
 	$filename = str_replace("Ä", "A", $filename);
@@ -11,12 +10,12 @@ function  flnmclean($filename) {
 }
 a:
 session_start();
-$settings_location = "info.php"; #should never be in web-directory
+$settings_location = "../data/info.php"; #should never be in web-directory
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>TFU File Uploader</title>
+<title>File Upload 1 alpha</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 </head>
 <body>
@@ -44,7 +43,7 @@ if($_POST['npassword']) {
 		$p = explode("|", $pa);
 	        if($_SESSION['user'] == $p[0]) {
 			$upass = md5($_POST['npassword']);
-			$udata = "$p[0]|$upass";
+			$udata = "$p[0]|$upass\n";
 			fwrite($fed, $udata);
 			echo "Password changed";
 		}
