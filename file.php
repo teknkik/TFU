@@ -11,7 +11,7 @@ function  flnmclean($filename) {
 	return ($filename);
 }
 function errmsg($errorcode) { #for failures
-	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out");
+	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out", "No password given", "Username already exists");
 	echo '<a href="?">Reload</a><br>';
 	die($errorarray[$errorcode]."</body></html>");
 }
@@ -32,17 +32,35 @@ $username = $_POST['username'];
 if(!$info_addr) errmsg(0);
 if(!$info_location) errmsg(0);
 if(!$info_script_location) errmsg(0);
+
 #logged in-------------------------------#
+
 if($_SESSION['log'] == 1) {
 #logging out
 	if($_GET['exit']) {
 		session_destroy();
 		errmsg(6);
 	 }
+#adding new user
+	if($_GET['newum'] && $_GET['newup']) {
+	$new_username = $_GET['newum'];
+	$new_username = htmlentities(flnmclean($new_username));
+	$new_userpassword = $_GET['newup'];
+	$newuser_array = file($info_userinfo);
+	foreach($newuser_array as $nua) {
+			$nua = explode("|", $nua);
+			if($nua[0] == $new_username) errmsg(8);
+		}
+	$fed = fopen($info_userinfo, "a");
+	$upass = md5($new_userpassword);
+	$udata = "$new_username|$upass\n";
+	fwrite($fed, $udata);
+	fclose($fed);
+}
 #changing password
-if($_POST['npassword']) {
-	$password_array = file($info_userinfo);
-	$fed = fopen($info_userinfo, "w");
+	if($_POST['npassword']) {
+		$password_array = file($info_userinfo);
+		$fed = fopen($info_userinfo, "w");
 	foreach($password_array as $pa) {
 		$p = explode("|", $pa);
 	        if($_SESSION['user'] == $p[0]) {
