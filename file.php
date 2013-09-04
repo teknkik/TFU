@@ -37,12 +37,12 @@ if(!$info_script_location) errmsg(0);
 
 if($_SESSION['log'] == 1) {
 #logging out
-	if($_GET['exit']) {
+if($_GET['exit']) {
 		session_destroy();
 		errmsg(6);
 	 }
 #adding new user
-	if($_GET['newum'] && $_GET['newup']) {
+if($_GET['newum'] && $_GET['newup'] && in_array($_SESSION['user'], $info_admins)) {
 	$new_username = $_GET['newum'];
 	$new_username = htmlentities(flnmclean($new_username));
 	$new_userpassword = $_GET['newup'];
@@ -56,9 +56,10 @@ if($_SESSION['log'] == 1) {
 	$udata = "$new_username|$upass\n";
 	fwrite($fed, $udata);
 	fclose($fed);
+	echo "New user added, username:<b> $new_username </b>";
 }
 #changing password
-	if($_POST['npassword']) {
+if($_POST['npassword']) {
 		$password_array = file($info_userinfo);
 		$fed = fopen($info_userinfo, "w");
 	foreach($password_array as $pa) {
@@ -77,7 +78,7 @@ if($_SESSION['log'] == 1) {
 fclose($fed);
 }
 #removing file-----------------------------------------------#
-	if($_GET['rmfn']) {
+if($_GET['rmfn']) {
 		$brmfn = $_GET['rmfn'];
 		$rmfn = str_replace("../", "", $brmfn);
 		if($rmfn !== $brmfn) errmsg(2);
@@ -87,7 +88,7 @@ fclose($fed);
 		else errmsg(1);
 	 }
 #changing name
-	if($_GET['orgflnm'] && $_GET['nflnm']) {
+if($_GET['orgflnm'] && $_GET['nflnm']) {
 	$borgflnm = $_GET['orgflnm'];
 	$bnflnm = $_GET['nflnm'];
 	$orgflnm = str_replace("../", "", $borgflnm);
@@ -106,7 +107,7 @@ fclose($fed);
 		else errmsg(5);
 	}
 #uploading
-	if($_FILES) {
+if($_FILES) {
 		if(!$_FILES['data']['error']) {
 				$extension = end(explode(".", $_FILES['data']['name']));
 				if(!in_array($extension, $info_disallowedexts)) {
@@ -135,6 +136,9 @@ fclose($fed);
 #----------------------------------------#
 	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
+	if(in_array($_SESSION['user'], $info_admins)) {
+echo '<form action"'.$info_script_location.'" method="get">Username: <input name="newum">Password: <input name="newup"><input type="submit" value="Create new user"></form>';
+}
 	echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
 }
 #when not logged in----------------------#
