@@ -7,5 +7,6 @@ Setup:
 1. Create a folder outside the web directory
 2. Move info.php and users.dat to that directory
 3. Edit the information in info.php to match your configuration
-4. Create the folder in which the files are saved
-5. You should now be ready to go, if the script doesn't work, check the file folders rights
+4. Edit the right location of info.php to the 2nd line of file.php
+5. Create the folder in which the files are saved
+6. You should be ready to go. If the script doesn't work, check the file folders rights
