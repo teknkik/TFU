@@ -137,7 +137,7 @@ if($_FILES) {
 	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
 	if(in_array($_SESSION['user'], $info_admins)) {
-echo '<form action"'.$info_script_location.'" method="get">Username: <input type="password" name="newum">Password: <input name="newup"><input type="submit" value="Create new user"></form>';
+echo '<form action"'.$info_script_location.'" method="get">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
 }
 	echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
 }
