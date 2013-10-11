@@ -36,16 +36,17 @@ if(!$info_script_location) errmsg(0);
 #logged in-------------------------------#
 
 if($_SESSION['log'] == 1) {
+$info_userlocation = $info_location.$_SESSION['user']."/";
 #logging out
 if($_GET['exit']) {
 		session_destroy();
 		errmsg(6);
 	 }
 #adding new user
-if($_GET['newum'] && $_GET['newup'] && in_array($_SESSION['user'], $info_admins)) {
-	$new_username = $_GET['newum'];
+if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admins)) {
+	$new_username = $_POST['newum'];
 	$new_username = htmlentities(flnmclean($new_username));
-	$new_userpassword = $_GET['newup'];
+	$new_userpassword = $_POST['newup'];
 	$newuser_array = file($info_userinfo);
 	foreach($newuser_array as $nua) {
 			$nua = explode("|", $nua);
@@ -56,6 +57,8 @@ if($_GET['newum'] && $_GET['newup'] && in_array($_SESSION['user'], $info_admins)
 	$udata = "$new_username|$upass\n";
 	fwrite($fed, $udata);
 	fclose($fed);
+	mkdir($info_location."$new_username", 0766);
+	touch($info_location."$new_username"."/index.html");
 	echo "New user added, username:<b> $new_username </b>";
 }
 #changing password
@@ -82,8 +85,8 @@ if($_GET['rmfn']) {
 		$brmfn = $_GET['rmfn'];
 		$rmfn = str_replace("../", "", $brmfn);
 		if($rmfn !== $brmfn) errmsg(2);
-		if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && file_exists($info_location."/".$rmfn)) {
-		unlink($info_location."/".$rmfn);
+		if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn)) {
+		unlink($info_userlocation."/".$rmfn);
 		}
 		else errmsg(1);
 	 }
@@ -96,10 +99,10 @@ if($_GET['orgflnm'] && $_GET['nflnm']) {
 	if($nflnm !== $bnflnm) errmsg(1);
 	if($orgflnm !== $borgflnm) errmsg(1);
 	$nflnm = flnmclean($nflnm);
-	if($orgflnm !== "." && $orgflnm !== ".." && $orgflnm !== "index.php" && file_exists($info_location."/".$orgflnm) && $nflnm !== "." && $nflnm !== ".." && $nflnm !== "index.php" && !file_exists($info_location."/".$nflnm)) {
+	if($orgflnm !== "." && $orgflnm !== ".." && $orgflnm !== "index.php" && $orgflnm !== "index.html" && file_exists($info_userlocation."/".$orgflnm) && $nflnm !== "." && $nflnm !== ".." && $nflnm !== "index.php" && !file_exists($info_userlocation."/".$nflnm)) {
 		$extension = end(explode(".", $nflnm)); #let's check for file name thingy
 		if(!in_array($extension, $info_disallowedexts)) {
-			rename($info_location."/".$orgflnm, $info_location."/".$nflnm);
+			rename($info_userlocation."/".$orgflnm, $info_userlocation."/".$nflnm);
 			}
 		else errmsg(5);
 	echo "Filename changed.";
@@ -113,7 +116,7 @@ if($_FILES) {
 				if(!in_array($extension, $info_disallowedexts)) {
 				$name = $_FILES['data']['name'];
 				$name = flnmclean($name);
-				if(move_uploaded_file($_FILES['data']['tmp_name'], $info_location."/".$name)) {
+				if(move_uploaded_file($_FILES['data']['tmp_name'], $info_userlocation."/".$name)) {
 					echo "Upload successful";
 						}
 				else errmsg(4);
@@ -124,12 +127,12 @@ if($_FILES) {
 	}
 #file listing
 	 echo '<table>'."\n";
-	 $files = scandir($info_location);
+	 $files = scandir($info_userlocation);
 	 foreach ($files as $file) {
 	 $file = htmlentities($file);
 	 $file = utf8_encode($file);
-	 if($file !== "." && $file !== ".." && $file !== "index.php") {
-	 echo '<tr><td><a href="'.$info_addr.$file.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
+	 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html") {
+	 echo '<tr><td><a href="'.$info_addr.$_SESSION['user']."/".$file.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
 	 echo '</table>';
@@ -137,7 +140,7 @@ if($_FILES) {
 	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
 	if(in_array($_SESSION['user'], $info_admins)) {
-echo '<form action"'.$info_script_location.'" method="get">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
+echo '<form action"'.$info_script_location.'" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
 }
 	echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
 }
