@@ -8,6 +8,7 @@ function  flnmclean($filename) {
 	$filename = str_replace("Ö", "O", $filename);
 	$filename = str_replace("å", "a", $filename);
 	$filename = str_replace("Å", "A", $filename);
+	$filename = preg_replace('/[^A-Za-z0-9 _\.\-\+\&]/','',$filename);
 	return ($filename);
 }
 function errmsg($errorcode) { #for failures

@@ -7,5 +7,5 @@ $info_filelist = false; #partially working; does not work with user-spesific fol
 $info_disallowedexts = array("php", "php4", "php5", "html", "xhtml", "php3");
 $info_userinfo = "users.dat"; #must not be in the web directory
 $info_admins = array("default"); #add usernames to array for admin rights
-$info_disableuserfolders = true; #disables user-spesific folders
+$info_disableuserfolders = false; #disables user-spesific folders
 ?>
