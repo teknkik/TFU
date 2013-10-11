@@ -36,7 +36,8 @@ if(!$info_script_location) errmsg(0);
 #logged in-------------------------------#
 
 if($_SESSION['log'] == 1) {
-$info_userlocation = $info_location.$_SESSION['user']."/";
+if(!$info_disableuserfolders) $info_userlocation = $info_location.$_SESSION['user']."/";
+else $info_userlocation = $info_location;
 #logging out
 if($_GET['exit']) {
 		session_destroy();
@@ -131,8 +132,10 @@ if($_FILES) {
 	 foreach ($files as $file) {
 	 $file = htmlentities($file);
 	 $file = utf8_encode($file);
-	 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html") {
-	 echo '<tr><td><a href="'.$info_addr.$_SESSION['user']."/".$file.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
+	 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
+		if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file;
+		else $filelink = $info_addr.$file;
+	echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
 	 echo '</table>';
@@ -170,7 +173,7 @@ if($info_filelist == true) {
 	 foreach ($files as $file) {
 	 $file = htmlentities($file);
 	 $file = utf8_encode($file);
-	 if($file !== "." && $file !== ".." && $file !== "index.php") {
+	 if($file !== "." && $file !== ".." && $file !== "index.php" && !is_dir($info_location.$file."/")) {
 		echo '<tr><td><a href="'.$info_addr.$file.'">'.$file.'</a></td></tr>'."\n";
 		}
 	 }
