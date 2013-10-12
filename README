@@ -10,3 +10,8 @@ Setup:
 4. Edit the right location of info.php to the 2nd line of file.php
 5. Create the folder in which the files are saved
 6. You should be ready to go. If the script doesn't work, check the file folders rights
+
+Script needs write&read permissions to users.dat and the upload folder.
+In the upload folder, if user spesific folders are enabled, the script must also be able to create new folders.
+
+
