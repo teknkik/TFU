@@ -59,7 +59,7 @@ if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admin
 	$udata = "$new_username|$upass\n";
 	fwrite($fed, $udata);
 	fclose($fed);
-	mkdir($info_location."$new_username", 0766);
+	mkdir($info_location."$new_username", 0777);
 	touch($info_location."$new_username"."/index.html");
 	echo "New user added, username:<b> $new_username </b>";
 }
