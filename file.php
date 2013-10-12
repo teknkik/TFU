@@ -21,7 +21,7 @@ session_start();
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>TFU Upload</title>
+<title>TFU - Tek File Upload</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 </head>
 <body>
