@@ -64,8 +64,8 @@ if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admin
 	echo "New user added, username:<b> $new_username </b>";
 }
 #removing a user
-if($_GET['rmuser'] && in_array($_SESSION['user'], $info_admins)) {
-	$rmuser = $_GET['rmuser'];
+if($_POST['rmuser'] && in_array($_SESSION['user'], $info_admins)) {
+	$rmuser = $_POST['rmuser'];
 	$users = file($info_userinfo);
 	$fd = fopen($info_userinfo, "w");
 	foreach($users as $user) {
@@ -109,7 +109,7 @@ if($_GET['rmfn']) {
 		}
 		else errmsg(1);
 	 }
-#changing name
+#changing filename
 if($_GET['orgflnm'] && $_GET['nflnm']) {
 	$borgflnm = $_GET['orgflnm'];
 	$bnflnm = $_GET['nflnm'];
@@ -144,6 +144,20 @@ if($_FILES) {
 		}
 		else errmsg(4);
 	}
+if($_GET['admpanel'] && in_array($_SESSION['user'], $info_admins)) {
+	echo '<form action"'.$info_script_location.'" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
+#userlist for removing users
+$users = file($info_userinfo);
+echo '<br><form action="'.$info_script_location.'" method="post">';
+	foreach($users as $user) {
+		$user = explode("|", $user);
+		echo '<input type="radio" name="rmuser" value="'.$user[0].'">'.$user[0].'<br>';
+	}
+echo '<input type="submit" value="Remove user">';
+echo '</form><br>';
+echo '<a href="'.$info_script_location.'">Back</a>';
+}
+else {
 #file listing
 	 echo '<table>'."\n";
 	 $files = scandir($info_userlocation);
@@ -160,10 +174,9 @@ if($_FILES) {
 #----------------------------------------#
 	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
-	if(in_array($_SESSION['user'], $info_admins)) {
-echo '<form action"'.$info_script_location.'" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
-}
+if(in_array($_SESSION['user'], $info_admins)) echo '<a href="'.$info_script_location.'?admpanel=1">Admin panel</a>';
 	echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
+	}
 }
 #when not logged in----------------------#
 else {
