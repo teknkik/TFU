@@ -63,6 +63,23 @@ if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admin
 	touch($info_location."$new_username"."/index.html");
 	echo "New user added, username:<b> $new_username </b>";
 }
+#removing a user
+if($_GET['rmuser'] && in_array($_SESSION['user'], $info_admins)) {
+	$rmuser = $_GET['rmuser'];
+	$users = file($info_userinfo);
+	$fd = fopen($info_userinfo, "w");
+	foreach($users as $user) {
+		$u = explode("|", $user);
+		if($u[0] == $rmuser) {
+			echo "User removed";
+		}
+		else {
+			fwrite($fd, $user);
+		}
+	}
+#FOREACH ENDS
+	fclose($fd);
+}
 #changing password
 if($_POST['npassword']) {
 		$password_array = file($info_userinfo);
@@ -130,7 +147,7 @@ if($_FILES) {
 #file listing
 	 echo '<table>'."\n";
 	 $files = scandir($info_userlocation);
-	 foreach ($files as $file) {
+ foreach ($files as $file) {
 	 $file = htmlentities($file);
 	 $file = utf8_encode($file);
 	 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
