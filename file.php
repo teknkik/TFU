@@ -11,10 +11,9 @@ function  flnmclean($filename) {
 	$filename = preg_replace('/[^A-Za-z0-9 _\.\-\+\&]/','',$filename);
 	return ($filename);
 }
-function errmsg($errorcode) { #for failures
+function errmsg($errorcode) {
 	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out", "No password given", "Username already exists");
-	echo '<a href="?">Reload</a><br>';
-	die($errorarray[$errorcode]."</body></html>");
+	die('<a href="?">Reload</a><br>'.$errorarray[$errorcode]."</body></html>");
 }
 session_start();
 ?>
@@ -41,7 +40,7 @@ if($_GET['exit']) {
 		session_destroy();
 		errmsg(6);
 	 }
-#adding new user
+#adding a user
 if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admins)) {
 	$new_username = flnmclean($_POST['newum']);
 	$new_userpassword = md5($_POST['newup']);
@@ -70,7 +69,7 @@ if($_POST['rmuser'] && in_array($_SESSION['user'], $info_admins)) {
 	}
 fclose($fd);
 }
-#changing password
+#changing the password
 if($_POST['npassword']) {
 	$npassword = md5($_POST['npassword']);
 	$password_array = file($info_userinfo);
@@ -81,14 +80,14 @@ if($_POST['npassword']) {
 			fwrite($fed, "$pa[0]|$npassword\n");
 			echo "Password changed";
 		}
-	else	fwrite($fed, $pa);
+		else	fwrite($fed, $pa);
 	}
 fclose($fed);
 }
-#removing file-----------------------------------------------#
+#removing a file
 if($_GET['rmfn']) {
 		$crmfn = $_GET['rmfn'];
-		$rmfn = str_replace("../", "", $brmfn);
+		$rmfn = str_replace("../", "", $crmfn);
 		if($rmfn !== $crmfn) errmsg(2);
 			if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn))	unlink($info_userlocation."/".$rmfn);
 			else errmsg(1);
@@ -103,7 +102,7 @@ if($_GET['orgflnm'] && $_GET['nflnm']) {
 	if($orgflnm !== $corgflnm) errmsg(1);
 	$nflnm = flnmclean($nflnm);
 	if($orgflnm !== "." && $orgflnm !== ".." && $orgflnm !== "index.php" && $orgflnm !== "index.html" && file_exists($info_userlocation.$orgflnm) && $nflnm !== "." && $nflnm !== ".." && $nflnm !== "index.php" && $nflnm !== "index.html" && !file_exists($info_userlocation.$nflnm)) {
-		$extension = end(explode(".", $nflnm)); #let's check for file extensions
+		$extension = end(explode(".", $nflnm));
 		if(!in_array($extension, $info_disallowedexts)) rename($info_userlocation.$orgflnm, $info_userlocation.$nflnm);
 		else errmsg(5);
 		echo "Filename changed.";
@@ -127,7 +126,6 @@ if($_FILES) {
 #admin panel
 if($_GET['admpanel'] && in_array($_SESSION['user'], $info_admins)) {
 	echo '<form action"'.$info_script_location.'?admpanel=1" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
-#user list for the delete function
 	$users = file($info_userinfo);
 	echo '<br><form action="'.$info_script_location.'?admpanel=1" method="post">';
 	foreach($users as $user) {
@@ -149,8 +147,7 @@ else {
 			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
-	echo '</table>';
-	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
+	echo '</table><form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
 	if(in_array($_SESSION['user'], $info_admins)) echo '<a href="'.$info_script_location.'?admpanel=1">Admin panel</a>';
 		echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
@@ -173,18 +170,17 @@ foreach($files_array as $fi) {
 	}
 }
 if($pass) errmsg(3);
-#public fiel list if allowed
+#public file list
 if($info_filelist == true) {
 	 echo '<table>'."\n";
 	 $files = scandir($info_location);
 	 foreach ($files as $file) {
-	 $file = htmlentities($file);
-	 $file = utf8_encode($file);
-	 if($file !== "." && $file !== ".." && $file !== "index.php" && !is_dir($info_location.$file."/"))	echo '<tr><td><a href="'.$info_addr.$file.'">'.$file.'</a></td></tr>'."\n";
+		 $file = utf8_encode(htmlentities($file));
+		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/"))	echo '<tr><td><a href="'.$info_addr.$file.'">'.$file.'</a></td></tr>'."\n";
 	 }
 echo "</table><br>\n";
 }
-if(!$pass) echo '<form action="'.$info_script_location.'" method="post">
+echo '<form action="'.$info_script_location.'" method="post">
 Username: <input type="text" name="username"><br>
 Password: <input type="password" name="pass"><br><input type="submit" value="Login">
 </form>';
