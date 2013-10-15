@@ -27,16 +27,12 @@ session_start();
 <body>
 <?php
 a:
-$pass = $_POST['pass'];
-$username = $_POST['username'];
 #checking data from info.php
 if(!$info_addr) errmsg(0);
 if(!$info_location) errmsg(0);
 if(!$info_script_location) errmsg(0);
-
-#logged in-------------------------------#
-
-if($_SESSION['log']) {
+#logged in
+if($_SESSION['user']) {
 #userfolders
 if(!$info_disableuserfolders) $info_userlocation = $info_location.$_SESSION['user']."/";
 else $info_userlocation = $info_location;
@@ -47,17 +43,15 @@ if($_GET['exit']) {
 	 }
 #adding new user
 if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admins)) {
-	$new_username = $_POST['newum'];
-	$new_username = htmlentities(flnmclean($new_username));
-	$new_userpassword = $_POST['newup'];
+	$new_username = flnmclean($_POST['newum']);
+	$new_userpassword = md5($_POST['newup']);
 	$newuser_array = file($info_userinfo);
 	foreach($newuser_array as $nua) {
 			$nua = explode("|", $nua);
 			if($nua[0] == $new_username) errmsg(8);
 		}
 	$fed = fopen($info_userinfo, "a");
-	$upass = md5($new_userpassword);
-	$udata = "$new_username|$upass\n";
+	$udata = "$new_username|$new_userpassword\n";
 	fwrite($fed, $udata);
 	fclose($fed);
 	mkdir($info_location."$new_username", 0777);
@@ -78,15 +72,14 @@ fclose($fd);
 }
 #changing password
 if($_POST['npassword']) {
-		$password_array = file($info_userinfo);
-		$fed = fopen($info_userinfo, "w");
-		foreach($password_array as $pa) {
-			$p = explode("|", $pa);
-	        	if($_SESSION['user'] == $p[0]) {
-				$upass = md5($_POST['npassword']);
-				$udata = "$p[0]|$upass\n";
-				fwrite($fed, $udata);
-				echo "Password changed";
+	$npassword = md5($_POST['npassword']);
+	$password_array = file($info_userinfo);
+	$fed = fopen($info_userinfo, "w");
+	foreach($password_array as $pa) {
+		$pa = explode("|", $pa);
+        	if($_SESSION['user'] == $pa[0]) {
+			fwrite($fed, "$pa[0]|$npassword\n");
+			echo "Password changed";
 		}
 	else	fwrite($fed, $pa);
 	}
@@ -94,32 +87,28 @@ fclose($fed);
 }
 #removing file-----------------------------------------------#
 if($_GET['rmfn']) {
-		$brmfn = $_GET['rmfn'];
+		$crmfn = $_GET['rmfn'];
 		$rmfn = str_replace("../", "", $brmfn);
-		if($rmfn !== $brmfn) errmsg(2);
-		if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn)) {
-			unlink($info_userlocation."/".$rmfn);
-		}
-		else errmsg(1);
+		if($rmfn !== $crmfn) errmsg(2);
+			if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn))	unlink($info_userlocation."/".$rmfn);
+			else errmsg(1);
 	 }
 #changing filename
 if($_GET['orgflnm'] && $_GET['nflnm']) {
-	$borgflnm = $_GET['orgflnm'];
-	$bnflnm = $_GET['nflnm'];
-	$orgflnm = str_replace("../", "", $borgflnm);
-	$nflnm = str_replace("../", "", $bnflnm);
-	if($nflnm !== $bnflnm) errmsg(1);
-	if($orgflnm !== $borgflnm) errmsg(1);
+	$corgflnm = $_GET['orgflnm'];
+	$cnflnm = $_GET['nflnm'];
+	$orgflnm = str_replace("../", "", $orgflnm);
+	$nflnm = str_replace("../", "", $nflnm);
+	if($nflnm !== $cnflnm) errmsg(1);
+	if($orgflnm !== $corgflnm) errmsg(1);
 	$nflnm = flnmclean($nflnm);
 	if($orgflnm !== "." && $orgflnm !== ".." && $orgflnm !== "index.php" && $orgflnm !== "index.html" && file_exists($info_userlocation.$orgflnm) && $nflnm !== "." && $nflnm !== ".." && $nflnm !== "index.php" && $nflnm !== "index.html" && !file_exists($info_userlocation.$nflnm)) {
 		$extension = end(explode(".", $nflnm)); #let's check for file extensions
-		if(!in_array($extension, $info_disallowedexts)) {
-			rename($info_userlocation.$orgflnm, $info_userlocation.$nflnm);
-			}
+		if(!in_array($extension, $info_disallowedexts)) rename($info_userlocation.$orgflnm, $info_userlocation.$nflnm);
 		else errmsg(5);
 		echo "Filename changed.";
 		}
-		else errmsg(5);
+	else errmsg(5);
 	}
 #uploading
 if($_FILES) {
@@ -137,16 +126,15 @@ if($_FILES) {
 	}
 #admin panel
 if($_GET['admpanel'] && in_array($_SESSION['user'], $info_admins)) {
-	echo '<form action"'.$info_script_location.'" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
+	echo '<form action"'.$info_script_location.'?admpanel=1" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
+#user list for the delete function
 	$users = file($info_userinfo);
-	echo '<br><form action="'.$info_script_location.'" method="post">';
+	echo '<br><form action="'.$info_script_location.'?admpanel=1" method="post">';
 	foreach($users as $user) {
 		$user = explode("|", $user);
 		echo '<input type="radio" name="rmuser" value="'.$user[0].'">'.$user[0].'<br>';
 	}
-	echo '<input type="submit" value="Remove user">';
-	echo '</form><br>';
-	echo '<a href="'.$info_script_location.'">Back</a>';
+	echo '<input type="submit" value="Remove user"></form><br><a href="'.$info_script_location.'">Back</a>';
 }
 #file listing
 else {
@@ -156,30 +144,29 @@ else {
 		 $file = htmlentities($file);
 		 $file = utf8_encode($file);
 		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
-			if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file;
+			if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file; #a quick way to enable using own folders for users
 			else $filelink = $info_addr.$file;
 			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
-	 echo '</table>';
-#----------------------------------------#
+	echo '</table>';
 	echo '<form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
 	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
 	if(in_array($_SESSION['user'], $info_admins)) echo '<a href="'.$info_script_location.'?admpanel=1">Admin panel</a>';
 		echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
 	}
 }
-#when not logged in----------------------#
+#not logged in
 else {
 #logging in
-if($pass) {
-$md5pass = md5($pass);
+if($_POST['pass']) {
+$pass = md5($_POST['pass']);
+$username = $_POST['username'];
 $files_array = file($info_userinfo);
 foreach($files_array as $fi) {
 	$f = explode("|", $fi);
- 	if($f[1] == " "+$md5pass && $username == $f[0]) {
+ 	if($f[1] == " "+$pass && $username == $f[0]) {
 		echo "Welcome, ".$username."<br>";
-		$_SESSION['log'] = 1;
 		$_SESSION['user'] = $username;
 		goto a;
 		}
@@ -197,12 +184,10 @@ if($info_filelist == true) {
 	 }
 echo "</table><br>\n";
 }
-if(!$pass) {
-echo '<form action="'.$info_script_location.'" method="post">
+if(!$pass) echo '<form action="'.$info_script_location.'" method="post">
 Username: <input type="text" name="username"><br>
 Password: <input type="password" name="pass"><br><input type="submit" value="Login">
 </form>';
-	}
 }
 ?>
 </body>
