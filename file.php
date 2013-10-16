@@ -13,7 +13,7 @@ function  flnmclean($filename) {
 }
 function errmsg($errorcode) {
 	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out", "No password given", "Username already exists");
-	die('<a href="?">Reload</a><br>'.$errorarray[$errorcode]."</body></html>");
+	die('<a href="?">Reload</a><br>'.$errorarray[$errorcode].'</body></html>');
 }
 session_start();
 ?>
@@ -44,8 +44,7 @@ if($_GET['exit']) {
 if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admins)) {
 	$new_username = flnmclean($_POST['newum']);
 	$new_userpassword = md5($_POST['newup']);
-	$newuser_array = file($info_userinfo);
-	foreach($newuser_array as $nua) {
+	foreach(file($info_userinfo) as $nua) {
 			$nua = explode("|", $nua);
 			if($nua[0] == $new_username) errmsg(8);
 		}
@@ -63,9 +62,9 @@ if($_POST['rmuser'] && in_array($_SESSION['user'], $info_admins)) {
 	$users = file($info_userinfo);
 	$fd = fopen($info_userinfo, "w");
 	foreach($users as $user) {
-		$u = explode("|", $user);
-		if($u[0] == $rmuser)	echo "User removed";
-		else 			fwrite($fd, $user);
+		$ruser = explode("|", $user);
+		if($ruser[0] == $rmuser)	echo "User removed";
+		else 				fwrite($fd, $user);
 	}
 fclose($fd);
 }
@@ -96,8 +95,8 @@ if($_GET['rmfn']) {
 if($_GET['orgflnm'] && $_GET['nflnm']) {
 	$corgflnm = $_GET['orgflnm'];
 	$cnflnm = $_GET['nflnm'];
-	$orgflnm = str_replace("../", "", $orgflnm);
-	$nflnm = str_replace("../", "", $nflnm);
+	$orgflnm = str_replace("../", "", $corgflnm);
+	$nflnm = str_replace("../", "", $cnflnm);
 	if($nflnm !== $cnflnm) errmsg(1);
 	if($orgflnm !== $corgflnm) errmsg(1);
 	$nflnm = flnmclean($nflnm);
@@ -114,8 +113,7 @@ if($_FILES) {
 	if(!$_FILES['data']['error']) {
 		$extension = end(explode(".", $_FILES['data']['name']));
 		if(!in_array($extension, $info_disallowedexts)) {
-			$name = $_FILES['data']['name'];
-			$name = flnmclean($name);
+			$name = flnmclean($_FILES['data']['name']);
 			if(move_uploaded_file($_FILES['data']['tmp_name'], $info_userlocation.$name))	echo "Upload successful";
 			else errmsg(4);
 			}
@@ -126,9 +124,8 @@ if($_FILES) {
 #admin panel
 if($_GET['admpanel'] && in_array($_SESSION['user'], $info_admins)) {
 	echo '<form action"'.$info_script_location.'?admpanel=1" method="post">Username: <input name="newum">Password: <input type="password" name="newup"><input type="submit" value="Create new user"></form>';
-	$users = file($info_userinfo);
 	echo '<br><form action="'.$info_script_location.'?admpanel=1" method="post">';
-	foreach($users as $user) {
+	foreach(file($info_userinfo) as $user) {
 		$user = explode("|", $user);
 		echo '<input type="radio" name="rmuser" value="'.$user[0].'">'.$user[0].'<br>';
 	}
@@ -137,10 +134,8 @@ if($_GET['admpanel'] && in_array($_SESSION['user'], $info_admins)) {
 #file listing
 else {
 	 echo '<table>'."\n";
-	 $files = scandir($info_userlocation);
-	 foreach ($files as $file) {
-		 $file = htmlentities($file);
-		 $file = utf8_encode($file);
+	 foreach (scandir($info_userlocation) as $file) {
+		 $file = utf8_encode(htmlentities($file));
 		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
 			if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file; #a quick way to enable using own folders for users
 			else $filelink = $info_addr.$file;
@@ -159,10 +154,9 @@ else {
 if($_POST['pass']) {
 $pass = md5($_POST['pass']);
 $username = $_POST['username'];
-$files_array = file($info_userinfo);
-foreach($files_array as $fi) {
-	$f = explode("|", $fi);
- 	if($f[1] == " "+$pass && $username == $f[0]) {
+foreach(file($info_userinfo) as $fi) {
+	$fi = explode("|", $fi);
+ 	if($fi[1] == " "+$pass && $username == $fi[0]) {
 		echo "Welcome, ".$username."<br>";
 		$_SESSION['user'] = $username;
 		goto a;
@@ -171,13 +165,12 @@ foreach($files_array as $fi) {
 }
 if($pass) errmsg(3);
 #public file list
-if($info_filelist == true) {
+if($info_filelist) {
 	 echo '<table>'."\n";
-	 $files = scandir($info_location);
-	 foreach ($files as $file) {
+	 foreach (scandir($info_location) as $file) {
 		 $file = utf8_encode(htmlentities($file));
 		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/"))	echo '<tr><td><a href="'.$info_addr.$file.'">'.$file.'</a></td></tr>'."\n";
-	 }
+	}
 echo "</table><br>\n";
 }
 echo '<form action="'.$info_script_location.'" method="post">
