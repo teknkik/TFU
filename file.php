@@ -43,7 +43,7 @@ if($_GET['exit']) {
 #adding a user
 if($_POST['newum'] && $_POST['newup'] && in_array($_SESSION['user'], $info_admins)) {
 	$new_username = flnmclean($_POST['newum']);
-	$new_userpassword = md5($_POST['newup']);
+	$new_userpassword = md5($_POST['newup'].$_POST['newum']);
 	foreach(file($info_userinfo) as $nua) {
 			$nua = explode("|", $nua);
 			if($nua[0] == $new_username) errmsg(8);
@@ -70,16 +70,16 @@ fclose($fd);
 }
 #changing the password
 if($_POST['npassword']) {
-	$npassword = md5($_POST['npassword']);
+	$npassword = md5($_POST['npassword'].$_SESSION['user']);
 	$password_array = file($info_userinfo);
 	$fed = fopen($info_userinfo, "w");
-	foreach($password_array as $pa) {
-		$pa = explode("|", $pa);
+	foreach($password_array as $p) {
+		$pa = explode("|", $p);
         	if($_SESSION['user'] == $pa[0]) {
 			fwrite($fed, "$pa[0]|$npassword\n");
 			echo "Password changed";
 		}
-		else	fwrite($fed, $pa);
+		else	fwrite($fed, $p);
 	}
 fclose($fed);
 }
@@ -152,7 +152,7 @@ else {
 else {
 #logging in
 if($_POST['pass']) {
-$pass = md5($_POST['pass']);
+$pass = md5($_POST['pass'].$_POST['username']);
 $username = $_POST['username'];
 foreach(file($info_userinfo) as $fi) {
 	$fi = explode("|", $fi);
