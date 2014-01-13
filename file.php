@@ -84,17 +84,17 @@ if($_POST['npassword']) {
 fclose($fed);
 }
 #removing a file
-if($_GET['rmfn']) {
-		$crmfn = $_GET['rmfn'];
+if($_POST['rmfn']) {
+		$crmfn = $_POST['rmfn'];
 		$rmfn = str_replace("../", "", $crmfn);
 		if($rmfn !== $crmfn) errmsg(2);
 			if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn))	unlink($info_userlocation."/".$rmfn);
 			else errmsg(1);
 	 }
 #changing filename
-if($_GET['orgflnm'] && $_GET['nflnm']) {
-	$corgflnm = $_GET['orgflnm'];
-	$cnflnm = $_GET['nflnm'];
+if($_POST['orgflnm'] && $_POST['nflnm']) {
+	$corgflnm = $_POST['orgflnm'];
+	$cnflnm = $_POST['nflnm'];
 	$orgflnm = str_replace("../", "", $corgflnm);
 	$nflnm = str_replace("../", "", $cnflnm);
 	if($nflnm !== $cnflnm) errmsg(1);
@@ -139,7 +139,7 @@ else {
 		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
 			if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file; #a quick way to enable using own folders for users
 			else $filelink = $info_addr.$file;
-			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="get"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
+			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="post"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="post"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
 	echo '</table><form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
