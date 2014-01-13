@@ -12,7 +12,7 @@ function  flnmclean($filename) {
 	return ($filename);
 }
 function errmsg($errorcode) {
-	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out", "No password given", "Username already exists");
+	$errorarray = array("Info failure", "You tried to remove unallowed file or file does not exist", "You tried removing a file in different directory", "Wrong password", "Upload failed", "Disallowed file type or name", "Logged out", "No password given", "Username already exists", "You tried to edit unallowed file");
 	die('<a href="?">Reload</a><br>'.$errorarray[$errorcode].'</body></html>');
 }
 session_start();
@@ -36,7 +36,7 @@ if($_SESSION['user']) {
 if(!$info_disableuserfolders) $info_userlocation = $info_location.$_SESSION['user']."/";
 else $info_userlocation = $info_location;
 #logging out
-if($_GET['exit']) {
+if($_POST['exit']) {
 		session_destroy();
 		errmsg(6);
 	 }
@@ -90,7 +90,25 @@ if($_POST['rmfn']) {
 		if($rmfn !== $crmfn) errmsg(2);
 			if($rmfn !== "." && $rmfn !== ".." && $rmfn !== "index.php" && $rmfn !== "index.html" && file_exists($info_userlocation."/".$rmfn))	unlink($info_userlocation."/".$rmfn);
 			else errmsg(1);
+		echo "File removed";
 	 }
+#printing out editing form
+if($_POST['edit']) {
+		$ceditflnm = $_POST['edit'];
+		$editflnm = str_replace("../", "", $ceditflnm);
+		if($ceditflnm !== $editflnm) errmsg(2);
+			if($editflnm !== "." && $editflnm !== ".." && $editflnm !== "index.php" && $editflnm !== "index.html" && file_exists($info_userlocation."/".$editflnm))	echo '<form action="?" method="post" ><textarea name="fcont" rows="25" cols="100">'.file_get_contents($info_userlocation."/".$editflnm).'</textarea><input type="hidden" name="fledtnm" value="'.$editflnm.'"><br><input type="submit" value="Save file"></form><br>';
+			else errmsg(9);
+}
+#editing a file
+if($_POST['fledtnm'] && $_POST['fcont']) {
+		$ceditflnm = $_POST['fledtnm'];
+                $editflnm = str_replace("../", "", $ceditflnm);
+		if($ceditflnm !== $editflnm) errmsg(2);
+			if($editflnm !== "." && $editflnm !== ".." && $editflnm !== "index.php" && $editflnm !== "index.html" && file_exists($info_userlocation."/".$editflnm)) file_put_contents($info_userlocation."/".$editflnm, $_POST['fcont']);
+			else errmsg(9);
+		echo "Changes saved";
+}
 #changing filename
 if($_POST['orgflnm'] && $_POST['nflnm']) {
 	$corgflnm = $_POST['orgflnm'];
@@ -104,7 +122,7 @@ if($_POST['orgflnm'] && $_POST['nflnm']) {
 		$extension = end(explode(".", $nflnm));
 		if(!in_array($extension, $info_disallowedexts)) rename($info_userlocation.$orgflnm, $info_userlocation.$nflnm);
 		else errmsg(5);
-		echo "Filename changed.";
+		echo "Filename changed";
 		}
 	else errmsg(5);
 	}
@@ -139,13 +157,13 @@ else {
 		 if($file !== "." && $file !== ".." && $file !== "index.php" && $file !== "index.html" && !is_dir($info_location.$file."/")) {
 			if(!$info_disableuserfolders) $filelink = $info_addr.$_SESSION['user']."/".$file; #a quick way to enable using own folders for users
 			else $filelink = $info_addr.$file;
-			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="'.$info_script_location.'" method="post"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="remove"></form></td><td><form action="'.$info_script_location.'" method="post"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
+			echo '<tr><td><a href="'.$filelink.'" target="_blank">'.$file.'</a></td><td><form action="?" method="post"><input type="hidden" name="rmfn" value="'.$file.'"><input type="submit" value="Remove"></form></td><td><form action="?" method="post"><input type="hidden" name="edit" value="'.$file.'"><input type="submit" value="Edit"></form></td><td><form action="?" method="post"><input type="hidden" name="orgflnm" value="'.$file.'"><input type="text" name="nflnm"><input type="submit" value="Change filename"></form></td></tr>'."\n";
 		}
 	 }
-	echo '</table><form action="'.$info_script_location.'" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
-	echo '<form action="'.$info_script_location.'" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
+	echo '</table><form action="?" enctype="multipart/form-data" method="post"><input type="file" name="data"><input type="submit" value="Upload new file"></form>';
+	echo '<form action="?" method="post"><input name="npassword" type="password"><input type="submit" value="Change password"></form>';
 	if(in_array($_SESSION['user'], $info_admins)) echo '<a href="'.$info_script_location.'?admpanel=1">Admin panel</a>';
-		echo '<form action="'.$info_script_location.'" method="get"><input name="exit" type="submit" value="Logout"></form>';
+		echo '<form action="'.$info_script_location.'" method="post"><input name="exit" type="submit" value="Logout"></form>';
 	}
 }
 #not logged in
@@ -173,7 +191,7 @@ if($info_filelist) {
 	}
 echo "</table><br>\n";
 }
-echo '<form action="'.$info_script_location.'" method="post">
+echo '<form action="?" method="post">
 Username: <input type="text" name="username"><br>
 Password: <input type="password" name="pass"><br><input type="submit" value="Login">
 </form>';
