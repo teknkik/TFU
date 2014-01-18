@@ -1,0 +1,23 @@
+div.login 
+{
+margin-top: 5%;
+margin-left: auto;
+margin-right: auto;
+width:30%;
+}
+div.die
+{
+margin-top: 5%;
+text-align: center;
+margin-left: auto;
+margin-right: auto;
+width:50%;
+}
+body 
+{
+padding-top: 70px;
+}
+div.formbox
+{
+width:40%;
+}
