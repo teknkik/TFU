@@ -15,3 +15,5 @@ Script needs write&read permissions to users.dat and the upload folder.
 In the upload folder, if user spesific folders are enabled, the script must also be able to create new folders.
 
 
+
+Please note that bootstarp.css is licensed under http://www.apache.org/licenses/LICENSE-2.0
